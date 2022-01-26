@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div[data-error="error"]::after {
+            content: '请填写正确的URL';
+            color: red;
+        }
+        input {
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+   <form id="form">
+      <div>
+        <input type="url">
+      </div>
+   </form>
+   <button id="add">add</button>
+   <button id="submit">提交</button>
+</body>
+<script>
+//
+const type = value => typeof value
+const pattern = new RegExp('(http)+(s)*://[^\s]*')
+const isURL = (value) => {
+    if(type(value) === 'string') {
+        return pattern.test(value)
+    }
+    return false
+}
+const addErrorDom = (errorMsg = '') => {
+    const div = document.createElement('div');
+    div.innerText = errorMsg;
+    div.style.cssText = "color:red"
+    return div
+}
+// 
+
+
+const formDom = document.querySelector("#form");
+const btnDom = document.querySelector("#add");
+const submit = document.querySelector('#submit')
+btnDom.addEventListener('click', e => {
+    const div = document.createElement('div');
+    const input = document.createElement('input')
+    input.setAttribute('type', 'url');
+    div.appendChild(input)
+    formDom.appendChild(div)
+})
+submit.addEventListener('click', e => {
+    let flag = true
+    // 获取value值
+    const inputs = formDom.querySelectorAll('input')
+    const urls = [...inputs].map(inputDom => {
+        const value = inputDom.value
+        if(isURL(value)) {
+            inputDom.parentElement.setAttribute('data-error', 'success')
+            return value
+        }
+        flag = false
+        inputDom.parentElement.setAttribute('data-error', 'error')
+    })
+    flag && fetch('http://localhost:8089/upload', {
+        method: 'post',
+        headers: {
+            "Content-type": "application/json"
+        },
+        body: JSON.stringify({ urls })
+    })
+})
+</script>
+</html>
